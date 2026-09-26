@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F4EF;
+    --panel:#FCFBF7;
+    --line:#E4DFD1;
+    --ink:#23262B;
+    --ink-muted:#726C5D;
+    --accent:#2B4C6F;
+    --accent-soft:#E4EBF1;
+    --gold:#B8862B;
+    --cat-casa:#6B8F71;
+    --cat-faculdade:#7A5C3E;
+    --cat-familia:#B8862B;
+    --cat-amigos:#6E5B8C;
+    --danger:#A24444;
+    --radius:5px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14.5px;
+    line-height:1.5;
+  }
+  h1,h2,h3{
+    font-family:'Source Serif 4', serif;
+    font-weight:600;
+    margin:0;
+  }
+  button{
+    font-family:'IBM Plex Sans', sans-serif;
+    cursor:pointer;
+  }
+  input,select{
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+
+  /* ---------- layout ---------- */
+  .app{
+    display:grid;
+    grid-template-columns:220px 1fr;
+    min-height:100vh;
+  }
+  @media (max-width:760px){
+    .app{grid-template-columns:1fr;}
+    .sidebar{
+      position:sticky; top:0; z-index:5;
+      display:flex; flex-direction:row; overflow-x:auto;
+      border-right:none; border-bottom:1px solid var(--line);
+      padding:10px 12px;
+    }
+    .sidebar .brand, .sidebar .weekstats{display:none;}
+    .nav{display:flex; flex-direction:row; gap:6px;}
+    .nav button{white-space:nowrap;}
+  }
+
+  .sidebar{
+    background:var(--panel);
+    border-right:1px solid var(--line);
+    padding:22px 16px;
+    display:flex;
+    flex-direction:column;
+    gap:22px;
+  }
+  .brand{
+    font-family:'Source Serif 4', serif;
+    font-size:22px;
+    font-weight:600;
+    letter-spacing:0.2px;
+  }
+  .brand span{color:var(--accent);}
+
+  .nav{display:flex; flex-direction:column; gap:2px;}
+  .nav button{
+    all:unset;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:8px 9px;
+    border-radius:var(--radius);
+    color:var(--ink);
+    font-size:14px;
+  }
+  .nav button:hover{background:var(--accent-soft);}
+  .nav button.active{background:var(--accent); color:#fff;}
+  .dot{width:8px; height:8px; border-radius:50%; flex-shrink:0;}
+
+  .weekstats{
+    margin-top:auto;
+    border-top:1px solid var(--line);
+    padding-top:16px;
+  }
+  .weekstats h3{font-size:12.5px; color:var(--ink-muted); font-weight:500; font-family:'IBM Plex Sans',sans-serif; margin-bottom:10px;}
+  .bar-row{display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:12px;}
+  .bar-label{width:62px; flex-shrink:0; color:var(--ink-muted);}
+  .bar-track{flex:1; height:6px; background:var(--line); border-radius:3px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:3px;}
+  .bar-val{width:32px; text-align:right; color:var(--ink-muted); flex-shrink:0;}
+
+  .main{padding:28px 34px; max-width:820px;}
+  @media (max-width:760px){.main{padding:18px;}}
+
+  .capture{
+    display:flex;
+    gap:8px;
+    margin-bottom:26px;
+  }
+  .capture input{
+    flex:1;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--panel);
+    font-size:14px;
+    color:var(--ink);
+  }
+  .capture input:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .capture button{
+    all:unset;
+    padding:11px 16px;
+    background:var(--ink);
+    color:#fff;
+    border-radius:var(--radius);
+    font-size:13.5px;
+  }
+  .capture button:hover{background:var(--accent);}
+
+  .page-title{margin-bottom:4px;}
+  .page-sub{color:var(--ink-muted); font-size:13px; margin-bottom:22px;}
+
+  /* ---------- task list ---------- */
+  .task-list{display:flex; flex-direction:column; gap:1px; margin-bottom:22px;}
+  .task{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid transparent;
+  }
+  .task:not(:first-child){border-top:none;}
+  .task:first-child{border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);}
+  .task:last-child{border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius);}
+  .task.done{opacity:0.5;}
+  .task.done .task-title{text-decoration:line-through;}
+
+  .check{
+    width:17px; height:17px;
+    border:1.5px solid var(--ink-muted);
+    border-radius:4px;
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent;
+    padding:0;
+  }
+  .check.checked{background:var(--accent); border-color:var(--accent); color:#fff; font-size:12px;}
+
+  .task-body{flex:1; min-width:0;}
+  .task-title{font-size:14px;}
+  .task-meta{display:flex; gap:10px; font-size:11.5px; color:var(--ink-muted); margin-top:3px; flex-wrap:wrap;}
+  .tag{
+    padding:1px 7px;
+    border-radius:9px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    font-size:11px;
+  }
+  .tag.urgent{background:#F3E5E5; color:var(--danger);}
+
+  .task-actions{display:flex; gap:6px; flex-shrink:0;}
+  .icon-btn{
+    all:unset;
+    padding:6px 10px;
+    font-size:12px;
+    color:var(--ink-muted);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+  }
+  .icon-btn:hover{color:var(--ink); border-color:var(--ink-muted);}
+
+  .empty{
+    padding:30px 14px;
+    text-align:center;
+    color:var(--ink-muted);
+    background:var(--panel);
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+    font-size:13.5px;
+  }
+
+  /* ---------- forms ---------- */
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:22px;
+  }
+  .panel h3{font-size:14.5px; margin-bottom:14px;}
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .form-grid.full{grid-template-columns:1fr;}
+  .field{display:flex; flex-direction:column; gap:5px;}
+  .field label{font-size:12px; color:var(--ink-muted);}
+  .field input, .field select{
+    padding:8px 10px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#fff;
+    font-size:13.5px;
+    color:var(--ink);
+  }
+  .field input:focus, .field select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .form-actions{grid-column:1 / -1; display:flex; justify-content:flex-end; margin-top:4px;}
+  .btn-primary{
+    all:unset;
+    padding:9px 18px;
+    background:var(--ink);
+    color:#fff;
+    border-radius:var(--radius);
+    font-size:13.5px;
+  }
+  .btn-primary:hover{background:var(--accent);}
+
+  /* ---------- ideas ---------- */
+  .idea-row{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:8px;
+  }
+  .idea-text{flex:1; font-size:13.5px;}
+  .idea-actions{display:flex; gap:6px;}
+
+  /* ---------- money ---------- */
+  .money-summary{display:flex; gap:14px; margin-bottom:20px; flex-wrap:wrap;}
+  .money-card{
+    flex:1; min-width:150px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .money-card .label{font-size:11.5px; color:var(--ink-muted); margin-bottom:4px;}
+  .money-card .value{font-family:'IBM Plex Mono', monospace; font-size:20px;}
+  .goal-track{height:8px; background:var(--line); border-radius:4px; overflow:hidden; margin-top:8px;}
+  .goal-fill{height:100%; background:var(--accent); border-radius:4px;}
+  .goal-fill.over{background:var(--danger);}
+
+  .expense-row{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 14px;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .expense-row:not(:first-child){border-top:none;}
+  .expense-row:first-child{border-top-left-radius:var(--radius); border-top-right-radius:var(--radius);}
+  .expense-row:last-child{border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius);}
+  .expense-desc{flex:1; font-size:13.5px;}
+  .expense-amount{font-family:'IBM Plex Mono', monospace; font-size:13.5px;}
+  .expense-date{font-size:11.5px; color:var(--ink-muted); width:70px;}
+
+  /* ---------- pomodoro overlay ---------- */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(35,38,43,0.45);
+    display:none;
+    align-items:center; justify-content:center;
+    z-index:50;
+  }
+  .overlay.open{display:flex;}
+  .timer-card{
+    background:var(--panel);
+    border-radius:8px;
+    padding:34px 38px;
+    text-align:center;
+    width:280px;
+  }
+  .timer-task{font-size:13px; color:var(--ink-muted); margin-bottom:6px;}
+  .timer-ring{position:relative; width:170px; height:170px; margin:14px auto;}
+  .timer-ring svg{transform:rotate(-90deg);}
+  .timer-ring circle{fill:none; stroke-width:8;}
+  .ring-bg{stroke:var(--line);}
+  .ring-fg{stroke:var(--accent); stroke-linecap:round; transition:stroke-dashoffset 1s linear;}
+  .timer-digits{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:30px;
+  }
+  .timer-controls{display:flex; gap:8px; justify-content:center; margin-top:14px;}
+  .timer-controls button{
+    all:unset;
+    padding:9px 16px;
+    border-radius:var(--radius);
+    font-size:13px;
+    border:1px solid var(--line);
+  }
+  .timer-controls .primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .timer-close{
+    all:unset;
+    position:absolute; top:14px; right:16px;
+    color:var(--ink-muted); font-size:13px;
+    padding:4px;
+  }
+  .timer-card{position:relative;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">Base</div>
+    <nav class="nav" id="nav"></nav>
+    <div class="weekstats">
+      <h3>Tempo esta semana</h3>
+      <div id="weekBars"></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="capture">
+      <input type="text" id="captureInput" placeholder="Escreve o que te vier à cabeça e prime Enter…">
+      <button id="captureBtn">Guardar</button>
+    </div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="overlay" id="timerOverlay">
+  <div class="timer-card">
+    <button class="timer-close" id="timerCloseBtn">Fechar</button>
+    <div class="timer-task" id="timerTaskName">—</div>
+    <div class="timer-ring">
+      <svg width="170" height="170" viewBox="0 0 170 170">
+        <circle class="ring-bg" cx="85" cy="85" r="76"></circle>
+        <circle class="ring-fg" id="ringFg" cx="85" cy="85" r="76"></circle>
+      </svg>
+      <div class="timer-digits" id="timerDigits">25:00</div>
+    </div>
+    <div class="timer-controls">
+      <button id="timerStartPause">Iniciar</button>
+      <button id="timerReset">Reiniciar</button>
+      <button class="primary" id="timerFinish">Concluir sessão</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- state ---------------- */
+const CATEGORIES = [
+  {id:'casa', label:'Casa', color:'var(--cat-casa)'},
+  {id:'faculdade', label:'Faculdade', color:'var(--cat-faculdade)'},
+  {id:'familia', label:'Família', color:'var(--cat-familia)'},
+  {id:'amigos', label:'Amigos', color:'var(--cat-amigos)'}
+];
+const NAV_ITEMS = [
+  {id:'hoje', label:'Hoje'},
+  ...CATEGORIES,
+  {id:'ideias', label:'Ideias'},
+  {id:'dinheiro', label:'Dinheiro'}
+];
+
+let data = {
+  tasks: [],
+  ideas: [],
+  expenses: [],
+  sessions: [],
+  goal: 0
+};
+let currentTab = 'hoje';
+let timerState = { taskId:null, totalSeconds:25*60, remaining:25*60, running:false, interval:null };
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function catInfo(id){ return CATEGORIES.find(c=>c.id===id) || CATEGORIES[0]; }
+
+/* ---------------- persistence ---------------- */
+async function loadData(){
+  try{
+    const res = await window.storage.get('base-data', false);
+    if(res && res.value){
+      const parsed = JSON.parse(res.value);
+      data = Object.assign(data, parsed);
+    }
+  }catch(e){
+    console.log('Sem dados guardados ainda, a começar do zero.');
+  }
+  render();
+}
+async function saveData(){
+  try{
+    await window.storage.set('base-data', JSON.stringify(data), false);
+  }catch(e){
+    console.error('Erro ao guardar dados', e);
+  }
+}
+
+/* ---------------- nav ---------------- */
+function buildNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  NAV_ITEMS.forEach(item=>{
+    const btn = document.createElement('button');
+    btn.className = currentTab===item.id ? 'active' : '';
+    const dotColor = item.color ? item.color : (item.id==='ideias' ? 'var(--gold)' : item.id==='dinheiro' ? 'var(--accent)' : 'var(--ink-muted)');
+    btn.innerHTML = `<span class="dot" style="background:${dotColor}"></span>${item.label}`;
+    btn.onclick = ()=>{ currentTab = item.id; render(); };
+    nav.appendChild(btn);
+  });
+}
+
+/* ---------------- week stats ---------------- */
+function renderWeekBars(){
+  const el = document.getElementById('weekBars');
+  const since = Date.now() - 7*24*60*60*1000;
+  const totals = {};
+  CATEGORIES.forEach(c=> totals[c.id]=0);
+  data.sessions.forEach(s=>{
+    if(new Date(s.date).getTime() >= since && totals.hasOwnProperty(s.category)){
+      totals[s.category] += s.minutes;
+    }
+  });
+  const max = Math.max(1, ...Object.values(totals));
+  el.innerHTML = CATEGORIES.map(c=>{
+    const mins = totals[c.id];
+    const pct = Math.round((mins/max)*100);
+    const hrs = (mins/60).toFixed(1);
+    return `<div class="bar-row">
+      <div class="bar-label">${c.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c.color}"></div></div>
+      <div class="bar-val">${hrs}h</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------------- render router ---------------- */
+function render(){
+  buildNav();
+  renderWeekBars();
+  const content = document.getElementById('content');
+  if(currentTab==='hoje') content.innerHTML = renderTaskPage('hoje');
+  else if(CATEGORIES.some(c=>c.id===currentTab)) content.innerHTML = renderTaskPage(currentTab);
+  else if(currentTab==='ideias') content.innerHTML = renderIdeasPage();
+  else if(currentTab==='dinheiro') content.innerHTML = renderMoneyPage();
+  attachHandlers();
+}
+
+/* ---------------- tasks ---------------- */
+function renderTaskPage(scope){
+  const isToday = scope==='hoje';
+  const cat = isToday ? null : catInfo(scope);
+  let list = data.tasks.filter(t=>{
+    if(isToday) return !t.done && (!t.due || t.due<=todayISO());
+    return t.category===scope;
+  });
+  list = list.filter(t=> isToday ? true : true);
+  if(isToday) list.sort((a,b)=> (a.due||'9999').localeCompare(b.due||'9999'));
+
+  const title = isToday ? 'Hoje' : cat.label;
+  const sub = isToday ? 'Tarefas pendentes com prazo para hoje ou sem prazo definido.' : `Tarefas na categoria ${cat.label}.`;
+
+  const rows = list.length ? list.map(t=>taskRowHTML(t)).join('') : `<div class="empty">Sem tarefas por aqui. Usa o formulário abaixo para adicionar a primeira.</div>`;
+
+  const formSection = isToday ? '' : `
+    <div class="panel">
+      <h3>Nova tarefa em ${cat.label}</h3>
+      <form id="taskForm" class="form-grid">
+        <div class="field" style="grid-column:1/-1"><label>Título</label><input type="text" id="f-title" required></div>
+        <div class="field"><label>Tempo estimado (min)</label><input type="number" id="f-est" min="1" value="30"></div>
+        <div class="field"><label>Prazo (opcional)</label><input type="date" id="f-due"></div>
+        <div class="field"><label>Prioridade</label>
+          <select id="f-priority"><option value="baixa">Baixa</option><option value="alta">Alta</option></select>
+        </div>
+        <div class="field"><label>Urgência</label>
+          <select id="f-urgency"><option value="baixa">Baixa</option><option value="alta">Alta</option></select>
+        </div>
+        <div class="field"><label>Energia</label>
+          <select id="f-energy"><option value="leve">Leve</option><option value="pesada">Pesada</option></select>
+        </div>
+        <div class="field"><label>Repetição</label>
+          <select id="f-recurring"><option value="nenhuma">Nenhuma</option><option value="diaria">Diária</option><option value="semanal">Semanal</option></select>
+        </div>
+        <div class="form-actions"><button type="submit" class="btn-primary">Adicionar tarefa</button></div>
+      </form>
+    </div>`;
+
+  return `<h1 class="page-title">${title}</h1><p class="page-sub">${sub}</p>
+    <div class="task-list">${rows}</div>
+    ${formSection}`;
+}
+
+function taskRowHTML(t){
+  const cat = catInfo(t.category);
+  const estH = t.est ? `${t.est}min` : '';
+  const doneCls = t.done ? 'done' : '';
+  return `<div class="task ${doneCls}" style="border-left-color:${cat.color}" data-id="${t.id}">
+    <button class="check ${t.done?'checked':''}" data-action="toggle" data-id="${t.id}">${t.done?'✓':''}</button>
+    <div class="task-body">
+      <div class="task-title">${escapeHTML(t.title)}</div>
+      <div class="task-meta">
+        <span class="tag">${cat.label}</span>
+        ${estH ? `<span>${estH} estim. · ${t.actual||0}min real</span>` : ''}
+        ${t.priority==='alta' ? '<span class="tag">Prioridade alta</span>' : ''}
+        ${t.urgency==='alta' ? '<span class="tag urgent">Urgente</span>' : ''}
+        ${t.due ? `<span>${formatDate(t.due)}</span>` : ''}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="icon-btn" data-action="timer" data-id="${t.id}">Iniciar</button>
+      <button class="icon-btn" data-action="delete" data-id="${t.id}">Remover</button>
+    </div>
+  </div>`;
+}
+
+/* ---------------- ideas ---------------- */
+function renderIdeasPage(){
+  const list = data.ideas;
+  const rows = list.length ? list.map(i=>`
+    <div class="idea-row" data-id="${i.id}">
+      <div class="idea-text">${escapeHTML(i.text)}</div>
+      <div class="idea-actions">
+        <select class="promo-cat" data-id="${i.id}">
+          ${CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}
+        </select>
+        <button class="icon-btn" data-action="promote" data-id="${i.id}">Transformar em tarefa</button>
+        <button class="icon-btn" data-action="delete-idea" data-id="${i.id}">Remover</button>
+      </div>
+    </div>`).join('') : `<div class="empty">Ainda não tens ideias guardadas. Usa a caixa no topo para capturar qualquer coisa rapidamente.</div>`;
+  return `<h1 class="page-title">Ideias</h1><p class="page-sub">Tudo o que capturas na caixa do topo cai aqui. Revê com calma e transforma em tarefa quando fizer sentido.</p>${rows}`;
+}
+
+/* ---------------- money ---------------- */
+function renderMoneyPage(){
+  const monthPrefix = todayISO().slice(0,7);
+  const monthExpenses = data.expenses.filter(e=> e.date.slice(0,7)===monthPrefix);
+  const total = monthExpenses.reduce((s,e)=> s+e.amount, 0);
+  const goal = data.goal || 0;
+  const pct = goal>0 ? Math.min(100, Math.round((total/goal)*100)) : 0;
+  const over = goal>0 && total>goal;
+
+  const byCat = {};
+  CATEGORIES.forEach(c=> byCat[c.id]=0);
+  monthExpenses.forEach(e=>{ if(byCat.hasOwnProperty(e.category)) byCat[e.category]+=e.amount; });
+
+  const rows = data.expenses.slice().sort((a,b)=> b.date.localeCompare(a.date)).slice(0,25).map(e=>`
+    <div class="expense-row">
+      <div class="expense-date">${formatDate(e.date)}</div>
+      <div class="expense-desc">${escapeHTML(e.desc)} <span class="tag">${catInfo(e.category).label}</span></div>
+      <div class="expense-amount">€${e.amount.toFixed(2)}</div>
+      <button class="icon-btn" data-action="delete-expense" data-id="${e.id}">Remover</button>
+    </div>`).join('');
+
+  return `<h1 class="page-title">Dinheiro</h1><p class="page-sub">Registo simples de gastos por categoria e meta mensal.</p>
+    <div class="money-summary">
+      <div class="money-card">
+        <div class="label">Gasto este mês</div>
+        <div class="value">€${total.toFixed(2)}</div>
+      </div>
+      <div class="money-card">
+        <div class="label">Meta mensal</div>
+        <div class="value">
+          <input type="number" id="goalInput" value="${goal||''}" placeholder="sem meta" style="width:90px; font-family:'IBM Plex Mono',monospace; font-size:18px; border:none; background:transparent; padding:0;">
+        </div>
+        ${goal>0 ? `<div class="goal-track"><div class="goal-fill ${over?'over':''}" style="width:${pct}%"></div></div>` : ''}
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Gastos por categoria este mês</h3>
+      ${CATEGORIES.map(c=>{
+        const v = byCat[c.id];
+        const maxv = Math.max(1, ...Object.values(byCat));
+        const p = Math.round((v/maxv)*100);
+        return `<div class="bar-row" style="margin-bottom:9px;">
+          <div class="bar-label">${c.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${c.color}"></div></div>
+          <div class="bar-val">€${v.toFixed(0)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="panel">
+      <h3>Novo gasto</h3>
+      <form id="expenseForm" class="form-grid">
+        <div class="field" style="grid-column:1/-1"><label>Descrição</label><input type="text" id="e-desc" required></div>
+        <div class="field"><label>Valor (€)</label><input type="number" id="e-amount" min="0" step="0.01" required></div>
+        <div class="field"><label>Categoria</label>
+          <select id="e-category">${CATEGORIES.map(c=>`<option value="${c.id}">${c.label}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Data</label><input type="date" id="e-date" value="${todayISO()}"></div>
+        <div class="form-actions"><button type="submit" class="btn-primary">Adicionar gasto</button></div>
+      </form>
+    </div>
+
+    <h3 style="font-size:14.5px; margin-bottom:10px;">Últimos gastos</h3>
+    ${rows || '<div class="empty">Ainda sem gastos registados.</div>'}
+  `;
+}
+
+/* ---------------- handlers ---------------- */
+function attachHandlers(){
+  document.querySelectorAll('[data-action="toggle"]').forEach(b=> b.onclick = ()=> toggleTask(b.dataset.id));
+  document.querySelectorAll('[data-action="delete"]').forEach(b=> b.onclick = ()=> deleteTask(b.dataset.id));
+  document.querySelectorAll('[data-action="timer"]').forEach(b=> b.onclick = ()=> openTimer(b.dataset.id));
+  document.querySelectorAll('[data-action="promote"]').forEach(b=> b.onclick = ()=> promoteIdea(b.dataset.id));
+  document.querySelectorAll('[data-action="delete-idea"]').forEach(b=> b.onclick = ()=> deleteIdea(b.dataset.id));
+  document.querySelectorAll('[data-action="delete-expense"]').forEach(b=> b.onclick = ()=> deleteExpense(b.dataset.id));
+
+  const taskForm = document.getElementById('taskForm');
+  if(taskForm) taskForm.onsubmit = (e)=>{
+    e.preventDefault();
+    const t = {
+      id: uid(),
+      title: document.getElementById('f-title').value.trim(),
+      category: currentTab,
+      est: parseInt(document.getElementById('f-est').value)||0,
+      actual: 0,
+      due: document.getElementById('f-due').value || null,
+      priority: document.getElementById('f-priority').value,
+      urgency: document.getElementById('f-urgency').value,
+      energy: document.getElementById('f-energy').value,
+      recurring: document.getElementById('f-recurring').value,
+      done: false
+    };
+    if(!t.title) return;
+    data.tasks.push(t);
+    saveData(); render();
+  };
+
+  const expenseForm = document.getElementById('expenseForm');
+  if(expenseForm) expenseForm.onsubmit = (e)=>{
+    e.preventDefault();
+    const ex = {
+      id: uid(),
+      desc: document.getElementById('e-desc').value.trim(),
+      amount: parseFloat(document.getElementById('e-amount').value)||0,
+      category: document.getElementById('e-category').value,
+      date: document.getElementById('e-date').value || todayISO()
+    };
+    if(!ex.desc) return;
+    data.expenses.push(ex);
+    saveData(); render();
+  };
+
+  const goalInput = document.getElementById('goalInput');
+  if(goalInput) goalInput.onchange = ()=>{
+    data.goal = parseFloat(goalInput.value)||0;
+    saveData(); render();
+  };
+}
+
+function toggleTask(id){
+  const t = data.tasks.find(t=>t.id===id);
+  if(t){ t.done = !t.done; saveData(); render(); }
+}
+function deleteTask(id){
+  data.tasks = data.tasks.filter(t=>t.id!==id);
+  saveData(); render();
+}
+function deleteIdea(id){
+  data.ideas = data.ideas.filter(i=>i.id!==id);
+  saveData(); render();
+}
+function deleteExpense(id){
+  data.expenses = data.expenses.filter(e=>e.id!==id);
+  saveData(); render();
+}
+function promoteIdea(id){
+  const idea = data.ideas.find(i=>i.id===id);
+  if(!idea) return;
+  const select = document.querySelector(`.promo-cat[data-id="${id}"]`);
+  const category = select ? select.value : 'casa';
+  data.tasks.push({
+    id: uid(), title: idea.text, category, est:30, actual:0, due:null,
+    priority:'baixa', urgency:'baixa', energy:'leve', recurring:'nenhuma', done:false
+  });
+  data.ideas = data.ideas.filter(i=>i.id!==id);
+  saveData(); render();
+}
+
+/* ---------------- capture bar ---------------- */
+document.getElementById('captureBtn').onclick = captureIdea;
+document.getElementById('captureInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') captureIdea();
+});
+function captureIdea(){
+  const input = document.getElementById('captureInput');
+  const text = input.value.trim();
+  if(!text) return;
+  data.ideas.push({id:uid(), text, createdAt:Date.now()});
+  input.value='';
+  saveData();
+  if(currentTab==='ideias') render();
+}
+
+/* ---------------- pomodoro ---------------- */
+function openTimer(taskId){
+  const t = data.tasks.find(t=>t.id===taskId);
+  timerState.taskId = taskId;
+  timerState.totalSeconds = 25*60;
+  timerState.remaining = 25*60;
+  timerState.running = false;
+  clearInterval(timerState.interval);
+  document.getElementById('timerTaskName').textContent = t ? t.title : '';
+  document.getElementById('timerStartPause').textContent = 'Iniciar';
+  updateRing();
+  document.getElementById('timerOverlay').classList.add('open');
+}
+function closeTimer(){
+  clearInterval(timerState.interval);
+  timerState.running = false;
+  document.getElementById('timerOverlay').classList.remove('open');
+}
+function updateRing(){
+  const circ = 2*Math.PI*76;
+  const ringFg = document.getElementById('ringFg');
+  ringFg.style.strokeDasharray = circ;
+  const frac = timerState.remaining / timerState.totalSeconds;
+  ringFg.style.strokeDashoffset = circ * (1-frac);
+  const m = Math.floor(timerState.remaining/60).toString().padStart(2,'0');
+  const s = (timerState.remaining%60).toString().padStart(2,'0');
+  document.getElementById('timerDigits').textContent = `${m}:${s}`;
+}
+function tick(){
+  if(timerState.remaining>0){
+    timerState.remaining--;
+    updateRing();
+  } else {
+    finishSession(true);
+  }
+}
+function finishSession(auto){
+  clearInterval(timerState.interval);
+  timerState.running = false;
+  const minutes = Math.round((timerState.totalSeconds - timerState.remaining)/60);
+  const t = data.tasks.find(t=>t.id===timerState.taskId);
+  if(t && minutes>0){
+    t.actual = (t.actual||0) + minutes;
+    data.sessions.push({id:uid(), taskId:t.id, category:t.category, minutes, date: todayISO()});
+    saveData();
+  }
+  document.getElementById('timerStartPause').textContent = 'Iniciar';
+  if(auto){
+    document.getElementById('timerDigits').textContent = 'Feito';
+  }
+  render();
+}
+document.getElementById('timerStartPause').onclick = ()=>{
+  if(timerState.running){
+    clearInterval(timerState.interval);
+    timerState.running = false;
+    document.getElementById('timerStartPause').textContent = 'Continuar';
+  } else {
+    timerState.running = true;
+    timerState.interval = setInterval(tick, 1000);
+    document.getElementById('timerStartPause').textContent = 'Pausar';
+  }
+};
+document.getElementById('timerReset').onclick = ()=>{
+  clearInterval(timerState.interval);
+  timerState.running = false;
+  timerState.remaining = timerState.totalSeconds;
+  document.getElementById('timerStartPause').textContent = 'Iniciar';
+  updateRing();
+};
+document.getElementById('timerFinish').onclick = ()=> finishSession(false);
+document.getElementById('timerCloseBtn').onclick = closeTimer;
+
+/* ---------------- utils ---------------- */
+function escapeHTML(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+function formatDate(iso){
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}`;
+}
+
+/* ---------------- init ---------------- */
+loadData();
+</script>
+
+</body>
+</html>
